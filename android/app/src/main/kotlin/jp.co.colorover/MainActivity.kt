@@ -1,4 +1,4 @@
-package com.example.colorcard
+package jp.co.colorover
 
 import io.flutter.embedding.android.FlutterActivity
 
