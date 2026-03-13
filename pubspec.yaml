@@ -48,6 +48,9 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon.png"
+  image_path_ios: "assets/icon_ios.png"
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
