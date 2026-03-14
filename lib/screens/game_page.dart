@@ -234,11 +234,11 @@ class _GamePageState extends State<GamePage> {
   int _recoveryGaugeLitCount() {
     final isRecoveryNow = (_isRecoveryTurnPending || _isRecoveryDialogVisible) &&
         _turn > 0 &&
-        _turn % 5 == 0;
+        _turn % 6 == 0;
     if (isRecoveryNow) {
-      return 5;
+      return 6;
     }
-    return _turn % 5;
+    return _turn % 6;
   }
 
   Future<void> _onTapCard(int index) async {
@@ -256,7 +256,7 @@ class _GamePageState extends State<GamePage> {
         : null;
     final nextCards = List<GameCardData>.from(_cards);
     final nextTurn = _turn + 1;
-    final shouldHoldForRecoveryTap = nextTurn % 5 == 0;
+    final shouldHoldForRecoveryTap = nextTurn % 6 == 0;
     final shouldBlockUntilEffectCompletes =
         ((selectedCard.isChange || shouldHoldForRecoveryTap) && effect != null);
 
@@ -506,7 +506,7 @@ class _GamePageState extends State<GamePage> {
   Future<void> _afterActionTurnEnd() async {
     if (!mounted) return;
 
-    if (_turn % 5 != 0) {
+    if (_turn % 6 != 0) {
       setState(() {
         _isInputLocked = false;
       });
@@ -828,8 +828,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget _buildRecoveryGauge() {
+    const recoveryCycle = 6;
     final litCount = _recoveryGaugeLitCount();
-    final isRecoveryNow = litCount == 5;
+    final isRecoveryNow = litCount == recoveryCycle;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -842,29 +843,32 @@ class _GamePageState extends State<GamePage> {
             fontWeight: FontWeight.w800,
             letterSpacing: 1.0,
           ),
-          child: Text(isRecoveryNow ? '回復' : 'あと${5 - litCount}'),
+          child: Text(isRecoveryNow ? '回復' : 'あと${recoveryCycle - litCount}'),
         ),
         const SizedBox(height: 10),
         Column(
           mainAxisSize: MainAxisSize.min,
-          children: List.generate(5, (displayIndex) {
-            final stepValue = 5 - displayIndex;
+          children: List.generate(recoveryCycle, (displayIndex) {
+            final stepValue = recoveryCycle - displayIndex;
             final isLit = litCount >= stepValue;
+            final isTopCell = stepValue == recoveryCycle;
 
             return Padding(
-              padding: EdgeInsets.only(bottom: displayIndex == 4 ? 0 : 8),
+              padding: EdgeInsets.only(
+                bottom: displayIndex == recoveryCycle - 1 ? 0 : 8,
+              ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
-                width: isRecoveryNow && stepValue == 5 ? 28 : 24,
-                height: isRecoveryNow && stepValue == 5 ? 28 : 24,
+                width: isRecoveryNow && isTopCell ? 28 : 24,
+                height: isRecoveryNow && isTopCell ? 28 : 24,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   gradient: isLit
                       ? LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: isRecoveryNow && stepValue == 5
+                          colors: isRecoveryNow && isTopCell
                               ? [
                                   Colors.amberAccent.withOpacity(0.98),
                                   Colors.deepOrangeAccent.withOpacity(0.94),
@@ -886,17 +890,17 @@ class _GamePageState extends State<GamePage> {
                     color: isLit
                         ? Colors.white.withOpacity(0.9)
                         : Colors.white.withOpacity(0.2),
-                    width: isRecoveryNow && stepValue == 5 ? 1.8 : 1.2,
+                    width: isRecoveryNow && isTopCell ? 1.8 : 1.2,
                   ),
                   boxShadow: isLit
                       ? [
                           BoxShadow(
-                            color: (isRecoveryNow && stepValue == 5
+                            color: (isRecoveryNow && isTopCell
                                     ? Colors.orangeAccent
                                     : Colors.cyanAccent)
                                 .withOpacity(0.55),
-                            blurRadius: isRecoveryNow && stepValue == 5 ? 20 : 14,
-                            spreadRadius: isRecoveryNow && stepValue == 5 ? 2 : 1,
+                            blurRadius: isRecoveryNow && isTopCell ? 20 : 14,
+                            spreadRadius: isRecoveryNow && isTopCell ? 2 : 1,
                           ),
                         ]
                       : [],
