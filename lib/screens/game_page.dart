@@ -121,11 +121,11 @@ class _GamePageState extends State<GamePage> {
     _isRestartingFromRewardAd = false;
   }
 
-  void _restartGame() {
+  void _restartGameImmediately() {
     setState(_resetState);
   }
 
-  Future<void> _restartGameWithRewardAd() async {
+  Future<void> _restartGame() async {
     if (_isRestartingFromRewardAd) {
       return;
     }
@@ -134,12 +134,19 @@ class _GamePageState extends State<GamePage> {
       _isRestartingFromRewardAd = true;
     });
 
-    await AdService.instance.showRewardedAd(
-      onFinished: () async {
-        if (!mounted) return;
-        _restartGame();
-      },
-    );
+    final playCountResult = await HighScoreService.registerPlayAndCheckRewardAd();
+
+    if (playCountResult.shouldShowRewardAd) {
+      await AdService.instance.showRewardedAd(
+        onFinished: () async {
+          if (!mounted) return;
+          _restartGameImmediately();
+        },
+      );
+    } else {
+      if (!mounted) return;
+      _restartGameImmediately();
+    }
 
     if (!mounted) return;
     setState(() {
@@ -747,9 +754,9 @@ class _GamePageState extends State<GamePage> {
                   ? null
                   : () async {
                       Navigator.of(dialogContext).pop();
-                      await _restartGameWithRewardAd();
+                      await _restartGame();
                     },
-              child: Text(_isRestartingFromRewardAd ? '広告表示中...' : 'もう一度'),
+              child: Text(_isRestartingFromRewardAd ? '読み込み中...' : 'もう一度'),
             ),
             TextButton(
               onPressed: () {

@@ -88,19 +88,26 @@ class _TitlePageState extends State<TitlePage> {
     return '${_myRank}位';
   }
 
-  Future<void> _startGameWithReward() async {
+  Future<void> _startGame() async {
     if (_isStartingGame) return;
 
     setState(() {
       _isStartingGame = true;
     });
 
-    await AdService.instance.showRewardedAd(
-      onFinished: () async {
-        if (!mounted) return;
-        await _goTo(context, const GamePage());
-      },
-    );
+    final playCountResult = await HighScoreService.registerPlayAndCheckRewardAd();
+
+    if (playCountResult.shouldShowRewardAd) {
+      await AdService.instance.showRewardedAd(
+        onFinished: () async {
+          if (!mounted) return;
+          await _goTo(context, const GamePage());
+        },
+      );
+    } else {
+      if (!mounted) return;
+      await _goTo(context, const GamePage());
+    }
 
     if (!mounted) return;
     setState(() {
@@ -186,8 +193,8 @@ class _TitlePageState extends State<TitlePage> {
                                 ),
                                 SizedBox(height: buttonSpacing),
                                 _GlassMenuButton(
-                                  label: _isStartingGame ? 'AD LOADING...' : 'GAME START',
-                                  onTap: _isStartingGame ? null : _startGameWithReward,
+                                  label: _isStartingGame ? 'LOADING...' : 'GAME START',
+                                  onTap: _isStartingGame ? null : _startGame,
                                   compact: compact,
                                 ),
                                 SizedBox(height: buttonSpacing),
